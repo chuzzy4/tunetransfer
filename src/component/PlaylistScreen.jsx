@@ -16,7 +16,7 @@ function PlaylistScreen({
         <div className="min-h-screen bg-slate-800 dark:bg-zinc-900 relative">
             <div className="dark:bg-zinc-800 rounded-md relative z-10">
                 <div className="flex flex-col md:flex-row justify-between items-center mb-4 sticky top-0 z-50 bg-white md:shadow-xl shadow-md p-5 w-full">
-                    <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-4 md:mb-0">Tune Transfer</h1>
+                    <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-4 md:mb-0">Tune Transfere</h1>
                     <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
                         <input
                             type="text"
@@ -29,9 +29,11 @@ function PlaylistScreen({
                         <button onClick={handleExport} className="bg-black text-white px-4 py-2 rounded-md  items-center">
                             Export as CSV
                         </button>
-                        <button onClick={handleExportAll} className="bg-black text-white px-4 py-2 rounded-md  items-center">
-                         Docs
-                        </button>
+                        <a href="https://drive.google.com/file/d/1YmTZ9VIAZxjr2GN4V7rBkOuktd6WuLUe/view?usp=sharing" target="_blank" rel="noopener noreferrer">
+                            <button onClick={handleExportAll} className="bg-black text-white px-4 py-2 rounded-md  items-center">
+                                Docs
+                            </button>
+                        </a>
                     </div>
                 </div>
 
@@ -70,7 +72,7 @@ function PlaylistScreen({
                 )}
             </div>
 
-           
+
             {!playlist && (
                 <div className="absolute inset-0 flex justify-center items-center opacity-30">
                     <img src={logo} alt="watermark" className="max-w-full max-h-full" />
