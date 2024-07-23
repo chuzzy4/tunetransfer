@@ -68,7 +68,7 @@ function PlaylistScreen({
                       ? pl.images[0].url
                       : "https://placehold.co/32"
                   }
-                  className="w-8 h-8"
+                  className="w-16 h-16"
                 />
               </div>
               <div className="flex-grow">
