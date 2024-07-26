@@ -17,7 +17,7 @@ function App() {
   useEffect(() => {
     setTimeout(() => {
       setLoading(false);
-    }, 6000);
+    }, 4000);
 
     const hash = window.location.hash;
     let token = window.localStorage.getItem("token");
@@ -137,7 +137,7 @@ function App() {
           <img
             src={logo}
             alt="watermark"
-            className="w-32 h-32 animate__animated animate__flash animate__slow"
+            className="w-52 h-52 animate__animated animate__flash animate__slow"
           />
         </div>
       </div>

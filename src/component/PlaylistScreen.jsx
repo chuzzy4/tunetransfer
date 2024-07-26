@@ -1,5 +1,5 @@
 import React from "react";
-import logo from "../assets/images/lg.png";
+import logo from "../assets/images/logos.jpeg";
 
 function PlaylistScreen({
   playlists,
