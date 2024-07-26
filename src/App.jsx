@@ -5,7 +5,7 @@ import { saveAs } from "file-saver";
 import Papa from "papaparse";
 import LoginScreen from "./component/LoginScreen";
 import PlaylistScreen from "./component/PlaylistScreen";
-import logo from "./assets/images/lg.png";
+import "./App.css";
 
 function App() {
   const [token, setToken] = useState("");
@@ -132,14 +132,8 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen p-4 bg-slate-800 dark:bg-zinc-900 flex items-center justify-center">
-        <div className="text-center">
-          <img
-            src={logo}
-            alt="watermark"
-            className="w-52 h-52 animate__animated animate__flash animate__slow"
-          />
-        </div>
+      <div className="h-screen p-4 bg-slate-800 dark:bg-zinc-900 flex items-center justify-center">
+        <div className="loader"></div>
       </div>
     );
   }
