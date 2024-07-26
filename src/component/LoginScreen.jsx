@@ -21,9 +21,7 @@ function LoginScreen() {
             ></path>
           </svg>
         </button>
-        <h2 className="text-2xl font-bold mb-2 text-center font-mono">
-          Tune Transfer
-        </h2>
+        <h2 className="text-2xl font-bold mb-2 text-center">Tune Transfer</h2>
         <p className="mb-4 text-center text-zinc-600">
           Backup your Spotify playlists with ease. Login to get started.
         </p>
