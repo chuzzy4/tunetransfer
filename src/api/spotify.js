@@ -3,10 +3,11 @@ import axios from "axios";
 const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
 const CLIENT_SECRET = import.meta.env.VITE_SPOTIFY_CLIENT_SECRET;
 
-const redirectUri =
-  import.meta.env.MODE === "development"
-    ? "https://tunetransfer.vercel.app/"
-    : "https://tunetransfer.netlify.app/";
+// const redirectUri =
+//   import.meta.env.MODE === "development"
+//     ? "http://localhost:5173/"
+//     : "https://tunetransfer.netlify.app/";
+const redirectUri = window.location.origin + "/";
 
 const scopes = ["playlist-read-private", "playlist-read-collaborative"];
 const authEndpoint = "https://accounts.spotify.com/authorize";
