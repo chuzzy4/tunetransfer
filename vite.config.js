@@ -10,7 +10,7 @@ export default defineConfig({
       includeAssets: ["favicon.svg", "robots.txt", "apple-touch-icon.png"],
       manifest: {
         name: "Tune Transfer",
-        short_name: "MyApp",
+        short_name: "T Transfer",
         start_url: "/",
         display: "standalone",
         background_color: "#ffffff",
