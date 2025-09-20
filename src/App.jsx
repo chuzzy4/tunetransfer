@@ -3,8 +3,8 @@ import { getPlaylist, getUserPlaylists } from "./api/spotify";
 import axios from "axios";
 import { saveAs } from "file-saver";
 import Papa from "papaparse";
-import LoginScreen from "./component/LoginScreen";
-import PlaylistScreen from "./component/PlaylistScreen";
+import LoginScreen from "./auth/LoginScreen";
+import PlaylistScreen from "./chunks/PlaylistScreen/index";
 import "./App.css";
 
 function App() {
@@ -12,7 +12,6 @@ function App() {
   const [playlists, setPlaylists] = useState([]);
   const [playlist, setPlaylist] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [playlistId, setPlaylistId] = useState("");
 
   useEffect(() => {
     setTimeout(() => {
@@ -77,57 +76,144 @@ function App() {
     }
   };
 
-  const handleFetchPlaylist = async () => {
-    if (playlistId) {
-      setLoading(true);
-      try {
-        const playlist = await getPlaylist(playlistId, token);
-        setPlaylist(playlist);
-      } catch (error) {
-        console.error("Error fetching playlist:", error);
-        alert("Invalid Playlist ID", error);
-        if (error.response && error.response.status === 401) {
-          window.localStorage.removeItem("token");
-          setToken("");
-        }
+  // FIXED: Accept playlistId as parameter and update selected playlist state
+  const handleFetchPlaylist = async (playlistId) => {
+    if (!playlistId || !token) {
+      console.error("Missing playlist ID or token");
+      return;
+    }
+
+    try {
+      console.log("App: Fetching playlist with ID:", playlistId);
+      const playlistData = await getPlaylist(playlistId, token);
+      console.log("App: Successfully fetched playlist:", playlistData.name);
+
+      // Update the selected playlist state
+      setPlaylist(playlistData);
+      return playlistData;
+    } catch (error) {
+      console.error("App: Error fetching playlist:", error);
+      alert(
+        "Error loading playlist: " +
+          (error.response?.data?.error?.message || error.message)
+      );
+
+      if (error.response && error.response.status === 401) {
+        window.localStorage.removeItem("token");
+        setToken("");
       }
-      setLoading(false);
+      throw error;
     }
   };
 
-  const handleExport = () => {
-    if (playlist) {
-      const data = playlist.tracks.items.map((item) => ({
-        name: item.track.name,
-        artist: item.track.artists.map((artist) => artist.name).join(", "),
-        album: item.track.album.name,
-      }));
+  // FIXED: Accept playlist parameter and handle both current and single playlist export
+  const handleExport = async (playlistToExport = null) => {
+    try {
+      let targetPlaylist = playlistToExport || playlist;
+
+      if (!targetPlaylist) {
+        alert("No playlist selected for export");
+        return;
+      }
+
+      console.log("App: Exporting playlist:", targetPlaylist.name);
+
+      // If playlist doesn't have tracks loaded, fetch them first
+      if (
+        !targetPlaylist.tracks?.items ||
+        targetPlaylist.tracks.items.length === 0
+      ) {
+        console.log("App: Playlist tracks not loaded, fetching...");
+        targetPlaylist = await handleFetchPlaylist(targetPlaylist.id);
+      }
+
+      if (!targetPlaylist.tracks?.items) {
+        throw new Error("No tracks found in playlist");
+      }
+
+      const data = targetPlaylist.tracks.items
+        .filter((item) => item.track) // Filter out null tracks
+        .map((item) => ({
+          name: item.track.name,
+          artist: item.track.artists.map((artist) => artist.name).join(", "),
+          album: item.track.album?.name || "Unknown Album",
+          duration: formatDuration(item.track.duration_ms),
+          added_date: new Date(item.added_at).toLocaleDateString(),
+          spotify_url: item.track.external_urls?.spotify || "",
+        }));
+
+      if (data.length === 0) {
+        throw new Error("No valid tracks found in playlist");
+      }
 
       const csv = Papa.unparse(data);
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      saveAs(blob, `${playlist.name}.csv`);
+      saveAs(blob, `${targetPlaylist.name}.csv`);
+
+      console.log("App: Successfully exported playlist:", targetPlaylist.name);
+    } catch (error) {
+      console.error("App: Error exporting playlist:", error);
+      alert("Failed to export playlist: " + error.message);
     }
   };
 
   const handleExportAll = async () => {
+    if (playlists.length === 0) {
+      alert("No playlists available to export");
+      return;
+    }
+
     setLoading(true);
+    let successCount = 0;
+    let failureCount = 0;
+
     for (const pl of playlists) {
       try {
-        const playlist = await getPlaylist(pl.id, token);
-        const data = playlist.tracks.items.map((item) => ({
-          name: item.track.name,
-          artist: item.track.artists.map((artist) => artist.name).join(", "),
-          album: item.track.album.name,
-        }));
+        console.log("App: Exporting playlist:", pl.name);
+        const playlistData = await getPlaylist(pl.id, token);
 
-        const csv = Papa.unparse(data);
-        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-        saveAs(blob, `${playlist.name}.csv`);
+        if (!playlistData.tracks?.items) {
+          console.warn("App: Playlist has no tracks:", pl.name);
+          continue;
+        }
+
+        const data = playlistData.tracks.items
+          .filter((item) => item.track)
+          .map((item) => ({
+            name: item.track.name,
+            artist: item.track.artists.map((artist) => artist.name).join(", "),
+            album: item.track.album?.name || "Unknown Album",
+            duration: formatDuration(item.track.duration_ms),
+            added_date: new Date(item.added_at).toLocaleDateString(),
+            spotify_url: item.track.external_urls?.spotify || "",
+          }));
+
+        if (data.length > 0) {
+          const csv = Papa.unparse(data);
+          const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+          saveAs(blob, `${playlistData.name}.csv`);
+          successCount++;
+        }
+
+        // Add delay to avoid rate limiting
+        await new Promise((resolve) => setTimeout(resolve, 500));
       } catch (error) {
-        console.error("Error exporting playlist:", error);
+        console.error("App: Error exporting playlist:", pl.name, error);
+        failureCount++;
       }
     }
+
     setLoading(false);
+    alert(
+      `Export completed! ${successCount} playlists exported successfully. ${failureCount} failed.`
+    );
+  };
+
+  // Helper function to format duration
+  const formatDuration = (ms) => {
+    const minutes = Math.floor(ms / 60000);
+    const seconds = ((ms % 60000) / 1000).toFixed(0);
+    return `${minutes}:${seconds.padStart(2, "0")}`;
   };
 
   if (loading) {
@@ -146,9 +232,6 @@ function App() {
         <PlaylistScreen
           playlists={playlists}
           playlist={playlist}
-          token={token}
-          playlistId={playlistId}
-          setPlaylistId={setPlaylistId}
           handleFetchPlaylist={handleFetchPlaylist}
           handleExport={handleExport}
           handleExportAll={handleExportAll}
