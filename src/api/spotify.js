@@ -5,7 +5,7 @@ const CLIENT_SECRET = import.meta.env.VITE_SPOTIFY_CLIENT_SECRET;
 
 const redirectUri =
   import.meta.env.MODE === "development"
-    ? "http://localhost:5173/"
+    ? "https://tunetransfer.vercel.app/"
     : "https://tunetransfer.netlify.app/";
 
 const scopes = ["playlist-read-private", "playlist-read-collaborative"];
